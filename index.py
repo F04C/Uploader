@@ -11,17 +11,30 @@ L = instaloader.Instaloader()
 # Initialize Discord bot
 bot = commands.Bot(command_prefix='!')
 
+# Function to load uploaded files from a file
+def load_uploaded_files():
+    try:
+        with open('uploaded_files.txt', 'r') as file:
+            return file.read().splitlines()
+    except FileNotFoundError:
+        return []
+
+# Function to save uploaded files to a file
+def save_uploaded_files(uploaded_files):
+    with open('uploaded_files.txt', 'w') as file:
+        file.write('\n'.join(uploaded_files))
+
 @bot.command(name='dl')
 async def download_and_upload(ctx, instagram_username):
     try:
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
-        await ctx.send(f"Downloading {post_count} posts from Instagram for {instagram_username}")
+        print(f"Downloading {post_count} posts from Instagram for {instagram_username}")
 
         for i, post in enumerate(profile.get_posts(), start=1):
             L.download_post(post, target=instagram_username)
-            await ctx.send(f"Downloaded post {i}/{post_count}")
+            print(f"Downloaded post {i}/{post_count}")
 
         # Create a new channel with the Instagram username
         channel_name = instagram_username.lower()  # Convert to lowercase for safety
@@ -37,20 +50,29 @@ async def download_and_upload(ctx, instagram_username):
         files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png"))]
         file_count = len(files)
 
-        await ctx.send(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
-        
+        print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
+
+        # Load previously uploaded files
+        uploaded_files = load_uploaded_files()
+
         for i, filename in enumerate(files, start=1):
-            with open(f"{instagram_username}/{filename}", "rb") as file:
-                await new_channel.send(file=discord.File(file, filename=filename))
+            if filename not in uploaded_files:  # Check if the file has not been uploaded already
+                with open(f"{instagram_username}/{filename}", "rb") as file:
+                    await new_channel.send(file=discord.File(file, filename=filename))
+                
+                uploaded_files.append(filename)  # Add the filename to the list of uploaded files
             
-            await ctx.send(f"Uploaded file {i}/{file_count}")
+            print(f"Uploaded file {i}/{file_count}")
+
+        # Save the updated list of uploaded files
+        save_uploaded_files(uploaded_files)
 
         # Delete the entire folder after uploading all files
         shutil.rmtree(instagram_username)
 
-        await ctx.send(f"Download, upload, and folder deletion completed for {instagram_username} in channel {new_channel.mention}")
+        print(f"Download, upload, and folder deletion completed for {instagram_username} in channel {new_channel.mention}")
     except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
+        print(f"An error occurred: {str(e)}")
 
 # Run the Discord bot
 bot.run(discord_token)
