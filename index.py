@@ -11,17 +11,17 @@ L = instaloader.Instaloader()
 # Initialize Discord bot
 bot = commands.Bot(command_prefix='!')
 
-# Function to load uploaded files from a file
-def load_uploaded_files():
+# Function to load uploaded files from a file for a specific Instagram username
+def load_uploaded_files(instagram_username):
     try:
-        with open('uploaded_files.txt', 'r') as file:
+        with open(f'{instagram_username}_uploaded_files.txt', 'r') as file:
             return file.read().splitlines()
     except FileNotFoundError:
         return []
 
-# Function to save uploaded files to a file
-def save_uploaded_files(uploaded_files):
-    with open('uploaded_files.txt', 'w') as file:
+# Function to save uploaded files to a file for a specific Instagram username
+def save_uploaded_files(instagram_username, uploaded_files):
+    with open(f'{instagram_username}_uploaded_files.txt', 'w') as file:
         file.write('\n'.join(uploaded_files))
 
 @bot.command(name='dl')
@@ -53,7 +53,7 @@ async def download_and_upload(ctx, instagram_username):
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
 
         # Load previously uploaded files
-        uploaded_files = load_uploaded_files()
+        uploaded_files = load_uploaded_files(instagram_username)
 
         for i, filename in enumerate(files, start=1):
             if filename not in uploaded_files:  # Check if the file has not been uploaded already
@@ -65,7 +65,7 @@ async def download_and_upload(ctx, instagram_username):
             print(f"Uploaded file {i}/{file_count}")
 
         # Save the updated list of uploaded files
-        save_uploaded_files(uploaded_files)
+        save_uploaded_files(instagram_username, uploaded_files)
 
         # Delete the entire folder after uploading all files
         shutil.rmtree(instagram_username)
