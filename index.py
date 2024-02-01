@@ -50,7 +50,7 @@ async def download_and_upload(ctx, instagram_username):
             new_channel = existing_channel
 
         # Upload images to the new channel
-        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png"))]
+        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png", ".mp4"))]
         file_count = len(files)
 
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
