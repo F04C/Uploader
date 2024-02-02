@@ -46,8 +46,6 @@ async def download_and_upload(ctx, instagram_username):
             new_channel = await ctx.guild.create_text_channel(channel_name)
             print(f"Created new channel: {new_channel.name}")
 
-            # Modify permissions to suppress everything
-            await new_channel.set_permissions(ctx.guild.default_role, send_messages=False, read_messages=False)
         else:
             new_channel = existing_channel
             print(f"Found existing channel: {new_channel.name}")
