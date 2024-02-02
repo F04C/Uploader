@@ -37,20 +37,23 @@ async def download_and_upload(ctx, instagram_username):
             print(f"Downloaded post {i}/{post_count}")
 
         # Create a new channel with the Instagram username
-        channel_name = instagram_username.lower()  # Convert to lowercase for safety
+        channel_name = instagram_username.lower()
+        print(f"Trying to create/find channel: {channel_name}")# Convert to lowercase for safety
         existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name)
 
         if not existing_channel:
             # Create a new text channel
             new_channel = await ctx.guild.create_text_channel(channel_name)
+            print(f"Created new channel: {new_channel.name}")
 
             # Modify permissions to suppress everything
             await new_channel.set_permissions(ctx.guild.default_role, send_messages=False, read_messages=False)
         else:
             new_channel = existing_channel
+            print(f"Found existing channel: {new_channel.name}")
 
         # Upload images to the new channel
-        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png", ".mp4"))]
+        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png"))]
         file_count = len(files)
 
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
@@ -58,14 +61,23 @@ async def download_and_upload(ctx, instagram_username):
         # Load previously uploaded files
         uploaded_files = load_uploaded_files(instagram_username)
 
+        # Adjusted file size limit for Discord's increased limit
+        max_file_size_bytes = 25 * 1024 * 1024  # 25 MB
+
         for i, filename in enumerate(files, start=1):
-            if filename not in uploaded_files:  # Check if the file has not been uploaded already
-                with open(f"{instagram_username}/{filename}", "rb") as file:
+            file_path = f"{instagram_username}/{filename}"
+
+            # Check file size before uploading
+            file_size = os.path.getsize(file_path)
+
+            if file_size <= max_file_size_bytes:
+                with open(file_path, "rb") as file:
                     await new_channel.send(file=discord.File(file, filename=filename))
                 
                 uploaded_files.append(filename)  # Add the filename to the list of uploaded files
-            
-            print(f"Uploaded file {i}/{file_count}")
+                print(f"Uploaded file {i}/{file_count}")
+            else:
+                print(f"Skipped file {i}/{file_count} (File size exceeds Discord limit)")
 
         # Save the updated list of uploaded files
         save_uploaded_files(instagram_username, uploaded_files)
