@@ -61,14 +61,19 @@ async def download_and_upload(ctx, instagram_username):
 
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
 
-        # Load previously uploaded files
-        uploaded_files = load_uploaded_files(instagram_username)
+        # Load previously uploaded files specific to the Instagram username
+        uploaded_files = set(load_uploaded_files(instagram_username))
 
         # Adjusted file size limit for Discord's increased limit
         max_file_size_bytes = 25 * 1024 * 1024  # 25 MB
 
         for i, filename in enumerate(files, start=1):
             file_path = f"{instagram_username}/{filename}"
+
+            # Check if the file has already been uploaded
+            if filename in uploaded_files:
+                print(f"Skipped file {i}/{file_count} (Already uploaded)")
+                continue
 
             # Check file size before uploading
             file_size = os.path.getsize(file_path)
@@ -77,7 +82,7 @@ async def download_and_upload(ctx, instagram_username):
                 with open(file_path, "rb") as file:
                     try:
                         await new_channel.send(file=discord.File(file, filename=filename))
-                        uploaded_files.append(filename)  # Add the filename to the list of uploaded files
+                        uploaded_files.add(filename)  # Add the filename to the set of uploaded files
                         print(f"Uploaded file {i}/{file_count}")
                     except discord.Forbidden:
                         print(f"Error: Bot doesn't have permission to send files in {new_channel.mention}.")
@@ -85,7 +90,7 @@ async def download_and_upload(ctx, instagram_username):
             else:
                 print(f"Skipped file {i}/{file_count} (File size exceeds Discord limit)")
 
-        # Save the updated list of uploaded files
+        # Save the updated list of uploaded files specific to the Instagram username
         save_uploaded_files(instagram_username, uploaded_files)
 
         # Delete the entire folder after uploading all files
