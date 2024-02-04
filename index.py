@@ -14,14 +14,15 @@ bot = commands.Bot(command_prefix='!')
 # Function to load uploaded files from a file for a specific Instagram username
 def load_uploaded_files(instagram_username):
     try:
-        with open(f'{instagram_username}_uploaded_files.txt', 'r') as file:
+        with open(f'Uploaded/{instagram_username}_uploaded_files.txt', 'r') as file:
             return file.read().splitlines()
     except FileNotFoundError:
         return []
 
 # Function to save uploaded files to a file for a specific Instagram username
 def save_uploaded_files(instagram_username, uploaded_files):
-    with open(f'{instagram_username}_uploaded_files.txt', 'w') as file:
+    os.makedirs('Uploaded', exist_ok=True)
+    with open(f'Uploaded/{instagram_username}_uploaded_files.txt', 'w') as file:
         file.write('\n'.join(uploaded_files))
 
 @bot.command(name='dl')
@@ -56,7 +57,7 @@ async def download_and_upload(ctx, instagram_username):
             print(f"Found existing channel: {new_channel.name}")
 
         # Upload images to the new channel
-        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png"))]
+        files = [filename for filename in os.listdir(f"Uploaded/{instagram_username}") if filename.endswith((".jpg", ".png"))]
         file_count = len(files)
 
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
@@ -68,7 +69,7 @@ async def download_and_upload(ctx, instagram_username):
         max_file_size_bytes = 25 * 1024 * 1024  # 25 MB
 
         for i, filename in enumerate(files, start=1):
-            file_path = f"{instagram_username}/{filename}"
+            file_path = f"Uploaded/{instagram_username}/{filename}"
 
             # Check if the file has already been uploaded
             if filename in uploaded_files:
@@ -94,7 +95,7 @@ async def download_and_upload(ctx, instagram_username):
         save_uploaded_files(instagram_username, uploaded_files)
 
         # Delete the entire folder after uploading all files
-        shutil.rmtree(instagram_username)
+        shutil.rmtree(f"Uploaded/{instagram_username}")
 
         print(f"Download, upload, and folder deletion completed for {instagram_username} in channel {new_channel.mention}")
     except Exception as e:
