@@ -41,20 +41,31 @@ async def download_and_upload(ctx, instagram_username):
                 print(f"Error downloading post {i}/{post_count}: {str(e)}")
 
         # Create or find a channel with the Instagram username
-        channel_name = instagram_username.lower()
-        existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel_name = instagram_username
+        existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name, type=discord.ChannelType.text)
 
         if not existing_channel:
-            # Create a new text channel
-            try:
-                new_channel = await ctx.guild.create_text_channel(channel_name)
-                print(f"Created new channel: {new_channel.name}")
-            except discord.Forbidden:
-                print(f"Error: Bot doesn't have permission to create a new channel.")
-                return
+            # Replace special characters with underscores for channel name
+            sanitized_channel_name = ''.join(c if c.isalnum() else '_' for c in channel_name)
+
+            # Check for an existing text channel with the sanitized name
+            existing_channel = next((channel for channel in ctx.guild.text_channels if channel.name == sanitized_channel_name), None)
+
+            if not existing_channel:
+                # Create a new text channel if no existing channel is found
+                try:
+                    new_channel = await ctx.guild.create_text_channel(sanitized_channel_name)
+                    print(f"Created new channel: {new_channel.name}")
+                except discord.Forbidden:
+                    print(f"Error: Bot doesn't have permission to create a new channel.")
+                    return
+            else:
+                new_channel = existing_channel
+                print(f"Found existing channel: {new_channel.name}")
         else:
             new_channel = existing_channel
             print(f"Found existing channel: {new_channel.name}")
+
 
         # Upload images to the new channel
         files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png", ".mp4"))]
