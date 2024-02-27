@@ -116,4 +116,4 @@ async def download_and_upload(ctx, instagram_username):
 bot.run(discord_token)
 
 
-# bug where the bot creates a new text channel even if there's an existing channel for that username
+# add an option like update function to update all txt files and download them
