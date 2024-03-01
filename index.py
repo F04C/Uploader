@@ -25,6 +25,24 @@ def save_uploaded_files(instagram_username, uploaded_files):
     with open(f'Uploaded/{instagram_username}_uploaded_files.txt', 'w') as file:
         file.write('\n'.join(uploaded_files))
 
+
+@bot.command(name='update')
+async def update_uploaded_files(ctx):
+    try:
+        # Iterate through all text files in the Uploaded folder
+        for filename in os.listdir('Uploaded'):
+            if filename.endswith('_uploaded_files.txt'):
+                instagram_username = filename.replace('_uploaded_files.txt', '')
+
+                # Download images from Instagram for the current username
+                await download_and_upload(ctx, instagram_username)
+
+        print("Update completed for all users.")
+    except Exception as e:
+        print(f"An error occurred during the update: {str(e)}")
+
+
+
 @bot.command(name='dl')
 async def download_and_upload(ctx, instagram_username):
     try:
@@ -106,7 +124,7 @@ async def download_and_upload(ctx, instagram_username):
         save_uploaded_files(instagram_username, uploaded_files)
 
         # Delete the entire folder after uploading all files
-        shutil.rmtree(instagram_username)
+        # shutil.rmtree(instagram_username)
 
         print(f"Download, upload, and folder deletion completed for {instagram_username} in channel {new_channel.mention}")
     except Exception as e:

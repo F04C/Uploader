@@ -2,3 +2,6 @@ config.py
 *.pyc
 *.txt
 *.json
+*.jpg
+*.mp4
+*.xz
