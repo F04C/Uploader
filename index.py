@@ -4,6 +4,8 @@ import instaloader
 import os
 import shutil
 from config import discord_token
+import random #this is for randomizing useragents
+from user_agents import USER_AGENTS #importing useragents
 
 # Initialize Instaloader
 L = instaloader.Instaloader()
@@ -43,9 +45,12 @@ async def update_uploaded_files(ctx):
 
 
 
+
 @bot.command(name='dl')
 async def download_and_upload(ctx, instagram_username):
     try:
+        # Set a custom user agent for Instaloader
+        L.context.user_agent = random.choice(USER_AGENTS)
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
