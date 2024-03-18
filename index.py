@@ -1,10 +1,10 @@
+import os
+import random #this is for randomizing useragents
 import discord
 from discord.ext import commands
 import instaloader
-import os
-import shutil
+# import shutil
 from config import discord_token
-import random #this is for randomizing useragents
 from user_agents import USER_AGENTS #importing useragents
 
 # Initialize Instaloader
