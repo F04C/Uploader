@@ -1,6 +1,7 @@
 config.py
 *.pyc
 *.txt
+!requirements.txt
 *.json
 *.jpg
 *.mp4
