@@ -1,4 +1,5 @@
 import os
+import asyncio
 import random #this is for randomizing useragents
 import discord
 from discord.ext import commands
@@ -13,6 +14,9 @@ L = instaloader.Instaloader()
 # Initialize Discord bot
 bot = commands.Bot(command_prefix='!')
 
+def set_random_user_agent():
+    L.context.user_agent = random.choice(USER_AGENTS)
+    
 # Function to load uploaded files from a file for a specific Instagram username
 def load_uploaded_files(instagram_username):
     try:
@@ -31,26 +35,36 @@ def save_uploaded_files(instagram_username, uploaded_files):
 @bot.command(name='update')
 async def update_uploaded_files(ctx):
     try:
-        # Iterate through all text files in the Uploaded folder
-        for filename in os.listdir('Uploaded'):
-            if filename.endswith('_uploaded_files.txt'):
-                instagram_username = filename.replace('_uploaded_files.txt', '')
+        tasks = []
 
-                # Download images from Instagram for the current username
-                await download_and_upload(ctx, instagram_username)
+        # Get a list of all files in the Uploaded folder
+        files = [file for file in os.listdir('Uploaded') if file.endswith('_uploaded_files.txt')]
+
+        # Sort the files based on modification time (oldest first)
+        files.sort(key=lambda x: os.path.getmtime(os.path.join('Uploaded', x)))
+
+        # Iterate through the sorted list of files
+        for filename in files:
+            instagram_username = filename.replace('_uploaded_files.txt', '')
+
+            # Create a task for each username to download and upload asynchronously
+            task = asyncio.create_task(download_and_upload(ctx, instagram_username))
+            tasks.append(task)
+
+        # Run all tasks concurrently
+        await asyncio.gather(*tasks)
 
         print("Update completed for all users.")
     except Exception as e:
         print(f"An error occurred during the update: {str(e)}")
 
 
-
-
 @bot.command(name='dl')
 async def download_and_upload(ctx, instagram_username):
     try:
-        # Set a custom user agent for Instaloader
-        L.context.user_agent = random.choice(USER_AGENTS)
+        # Set a random user agent for Instaloader
+        set_random_user_agent()
+
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
@@ -62,6 +76,14 @@ async def download_and_upload(ctx, instagram_username):
                 print(f"Downloaded post {i}/{post_count}")
             except instaloader.exceptions.InstaloaderException as e:
                 print(f"Error downloading post {i}/{post_count}: {str(e)}")
+                # Check if the error is due to a redirect
+                if "Redirected to login page" in str(e):
+                    # Change user agent and retry downloading the post
+                    set_random_user_agent()
+                    L.download_post(post, target=instagram_username)
+                    print(f"Downloaded post {i}/{post_count} after changing user agent")
+
+
 
         # Create or find a channel with the Instagram username
         channel_name = instagram_username
