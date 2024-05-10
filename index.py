@@ -5,9 +5,8 @@ import discord
 from discord.ext import commands
 import instaloader
 # import shutil
-from config import discord_token
+from config import discord_token, username, passwd #added username and password to be used in --login
 from user_agents import USER_AGENTS #importing useragents
-
 # Initialize Instaloader
 L = instaloader.Instaloader()
 
@@ -64,7 +63,11 @@ async def download_and_upload(ctx, instagram_username):
     try:
         # Set a random user agent for Instaloader
         set_random_user_agent()
-
+        L = instaloader.Instaloader(user_agent=random.choice(USER_AGENTS), download_geotags=False, download_comments=False, save_metadata=False)
+        
+        # Equivalent of --login
+        L.login(username, passwd)
+        
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
@@ -161,4 +164,6 @@ async def download_and_upload(ctx, instagram_username):
 bot.run(discord_token)
 
 
-# add an option like update function to update all txt files and download them
+# Need to check instaloader main repo about the error
+
+# An error occurred: Login: Checkpoint required. Point your browser to https://www.instagram.com/challenge/action/AXFCafOiDQ_XRypUz57tb4J0shSaWvKiw_CNDaYaCWl7X4bO2hpKQqjRqVt4vtbY0qcfOmo/AfzMJ6PjvSZXM46Rc68381t_Ute8WryRwJ7hKCJIXcc7P3cJdAPcrCmBhVHZnQKHL2Kiy11cY4cpVQ/ffc_KWeTmh26zKnnfhBZWHMfv8cI5hNKFqWUhhU9hO1DfuagAbIqjnOUWmrqIn5xu7mZ/ - follow the instructions, then retry.
