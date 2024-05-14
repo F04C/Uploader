@@ -41,7 +41,8 @@
 <div>
   <h4>Note:</h4>
   <p>It will only upload photos/videos that have a size <25MB as of now!</p>
-
+    <br/>
+  <h6><bold>Only works with Python 3.6 and <em>below</em></bold></h6> 
   <h6><bold>I will add more features like checking the account whether it is nitro-subscribed and increase the max. file size in the future!</bold></h6> 
 </div>
 
