@@ -167,7 +167,7 @@ bot.run(discord_token)
 
 #TODO
 #delete the appending of tasks when updating
-#also, add a logic where the oldest uploaded txt file will be updated first (this in turn become a temporary remedy about the useragent mismatch after downloading without the use of --login after some time)
+#also, add a logic where the oldest uploaded txt file will be updated first (this in turn become a temporary remedy about the useragent mismatch after downloading without the use of --login after some timeko)
 
 
 # Need to check instaloader main repo about the error
