@@ -51,11 +51,8 @@ async def update_uploaded_files(ctx):
             task = bot.loop.create_task(download_and_upload(ctx, instagram_username))
             tasks.append(task)
             break
-        # Run all tasks concurrently
         await asyncio.gather(*tasks)
-        # Check the logic here since it gathers all the task by downloading all the users in Uploaded folder and append it to `tasks`. This should only work when using !dl and not in !update as there is still an error which redirects or needs --login when there's too much of a requests that's been done like downloading images/videos where they were technically `downloaded` already
-
-        print("Update completed for all users.")
+        print("Update completed for", {instagram_username})
     except Exception as e:
         print(f"An error occurred during the update: {str(e)}")
 
@@ -173,9 +170,6 @@ bot.run(discord_token)
 #initialize a Downloaded directory first before downloading the files
 #if a Downloaded directory is found then proceed to download 
 
-# try to escape _ being sent in the text channel 
-# using _word_ makes it italic
 
 # Need to check instaloader main repo about the error
-
 # An error occurred: Login: Checkpoint required. Point your browser to https://www.instagram.com/challenge/action/AXFCafOiDQ_XRypUz57tb4J0shSaWvKiw_CNDaYaCWl7X4bO2hpKQqjRqVt4vtbY0qcfOmo/AfzMJ6PjvSZXM46Rc68381t_Ute8WryRwJ7hKCJIXcc7P3cJdAPcrCmBhVHZnQKHL2Kiy11cY4cpVQ/ffc_KWeTmh26zKnnfhBZWHMfv8cI5hNKFqWUhhU9hO1DfuagAbIqjnOUWmrqIn5xu7mZ/ - follow the instructions, then retry.
