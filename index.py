@@ -52,7 +52,7 @@ async def update_uploaded_files(ctx):
             tasks.append(task)
             break
         await asyncio.gather(*tasks)
-        print("Update completed for", {instagram_username})
+        print("Update completed for", instagram_username)
     except Exception as e:
         print(f"An error occurred during the update: {str(e)}")
 
