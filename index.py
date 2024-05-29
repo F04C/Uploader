@@ -169,6 +169,8 @@ bot.run(discord_token)
 #delete the appending of tasks when updating
 #also, add a logic where the oldest uploaded txt file will be updated first (this in turn become a temporary remedy about the useragent mismatch after downloading without the use of --login after some timeko)
 
+# try to escape _ being sent in the text channel 
+# using _word_ makes it italic
 
 # Need to check instaloader main repo about the error
 
