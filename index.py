@@ -65,7 +65,9 @@ async def download_and_upload(ctx, instagram_username):
     try:
         # Set a random user agent for Instaloader
         set_random_user_agent()
-        L = instaloader.Instaloader(user_agent=random.choice(USER_AGENTS), download_geotags=False, download_comments=False, save_metadata=False)
+        
+        # setting the download folder of instaloader to cleanup the main folder
+        L = instaloader.Instaloader(user_agent=random.choice(USER_AGENTS), dirname_pattern=f"Downloaded/{instagram_username}", download_geotags=False, download_comments=False, save_metadata=False)
         
         # Equivalent of --login
         # L.login(username, passwd)
@@ -87,8 +89,6 @@ async def download_and_upload(ctx, instagram_username):
                     set_random_user_agent()
                     L.download_post(post, target=instagram_username)
                     print(f"Downloaded post {i}/{post_count} after changing user agent")
-
-
 
         # Create or find a channel with the Instagram username
         channel_name = instagram_username
@@ -115,10 +115,12 @@ async def download_and_upload(ctx, instagram_username):
         else:
             new_channel = existing_channel
             print(f"Found existing channel: {new_channel.name}")
-
-
+        
+        #initialize a variable to store the recently made 'downloaded directory'
+        downloaded_dir = f"Downloaded/{instagram_username}"
+        
         # Upload images to the new channel
-        files = [filename for filename in os.listdir(instagram_username) if filename.endswith((".jpg", ".png", ".mp4"))]
+        files = [filename for filename in os.listdir(downloaded_dir) if filename.endswith((".jpg", ".png", ".mp4"))]
         file_count = len(files)
 
         print(f"Uploading {file_count} files to Discord in channel {new_channel.mention}")
@@ -130,7 +132,7 @@ async def download_and_upload(ctx, instagram_username):
         max_file_size_bytes = 25 * 1024 * 1024  # 25 MB
 
         for i, filename in enumerate(files, start=1):
-            file_path = f"{instagram_username}/{filename}"
+            file_path = os.path.join(downloaded_dir, filename)
 
             # Check if the file has already been uploaded
             if filename in uploaded_files:
@@ -166,7 +168,9 @@ async def download_and_upload(ctx, instagram_username):
 bot.run(discord_token)
 
 #TODO
+
 #delete the appending of tasks when updating
+
 #also, add a logic where the oldest uploaded txt file will be updated first (this in turn become a temporary remedy about the useragent mismatch after downloading without the use of --login after some timeko)
 
 # try to escape _ being sent in the text channel 
