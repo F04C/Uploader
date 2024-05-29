@@ -48,9 +48,9 @@ async def update_uploaded_files(ctx):
             instagram_username = filename.replace('_uploaded_files.txt', '')
 
             # Create a task for each username to download and upload asynchronously
-            task = asyncio.create_task(download_and_upload(ctx, instagram_username))
+            task = bot.loop.create_task(download_and_upload(ctx, instagram_username))
             tasks.append(task)
-
+            break
         # Run all tasks concurrently
         await asyncio.gather(*tasks)
         # Check the logic here since it gathers all the task by downloading all the users in Uploaded folder and append it to `tasks`. This should only work when using !dl and not in !update as there is still an error which redirects or needs --login when there's too much of a requests that's been done like downloading images/videos where they were technically `downloaded` already
@@ -169,9 +169,9 @@ bot.run(discord_token)
 
 #TODO
 
-#delete the appending of tasks when updating
 
-#also, add a logic where the oldest uploaded txt file will be updated first (this in turn become a temporary remedy about the useragent mismatch after downloading without the use of --login after some timeko)
+#initialize a Downloaded directory first before downloading the files
+#if a Downloaded directory is found then proceed to download 
 
 # try to escape _ being sent in the text channel 
 # using _word_ makes it italic
