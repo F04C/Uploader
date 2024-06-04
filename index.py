@@ -172,9 +172,12 @@ bot.run(discord_token)
 #TODO
 
 
-#initialize a Downloaded directory first before downloading the files
-#if a Downloaded directory is found then proceed to download 
+# initialize a Downloaded directory first before downloading the files
+# if a Downloaded directory is found then proceed to download 
 
+# add a feature where it saves a username (probably a text file to store the usernames) where an error occured
+# it will also check that file if it has any entry/ies to it and it will update it first using !update
+# so this will be added somewhere in the dl or the upload function
 
 # Need to check instaloader main repo about the error
 # An error occurred: Login: Checkpoint required. Point your browser to https://www.instagram.com/challenge/action/AXFCafOiDQ_XRypUz57tb4J0shSaWvKiw_CNDaYaCWl7X4bO2hpKQqjRqVt4vtbY0qcfOmo/AfzMJ6PjvSZXM46Rc68381t_Ute8WryRwJ7hKCJIXcc7P3cJdAPcrCmBhVHZnQKHL2Kiy11cY4cpVQ/ffc_KWeTmh26zKnnfhBZWHMfv8cI5hNKFqWUhhU9hO1DfuagAbIqjnOUWmrqIn5xu7mZ/ - follow the instructions, then retry.
