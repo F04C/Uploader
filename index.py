@@ -40,6 +40,11 @@ async def update_uploaded_files(ctx):
         # Get a list of all files in the Uploaded folder
         files = [file for file in os.listdir('Uploaded') if file.endswith('_uploaded_files.txt')]
 
+        for file in files:
+            file_path = os.path.join('Uploaded', file)
+            print(f"{file}: {os.path.getmtime(file_path)}")
+            
+            
         # Sort the files based on modification time (oldest first)
         files.sort(key=lambda x: os.path.getmtime(os.path.join('Uploaded', x)))
 
