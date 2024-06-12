@@ -6,3 +6,4 @@ config.py
 *.jpg
 *.mp4
 *.xz
+*.bat

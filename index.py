@@ -149,7 +149,7 @@ async def download_and_upload(ctx, instagram_username):
                     try:
                         await new_channel.send(file=discord.File(file, filename=filename))
                         uploaded_files.add(filename)  # Add the filename to the set of uploaded files
-                        print(f"Uploaded file {i}/{file_count}")
+                        print(f"Uploaded file {i}/{file_count} of {instagram_username}")
                     except discord.Forbidden:
                         print(f"Error: Bot doesn't have permission to send files in {new_channel.mention}.")
                         return
