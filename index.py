@@ -1,13 +1,12 @@
 import os
 import asyncio
-import random #this is for randomizing useragents
+import random
 import discord
 from discord.ext import commands
 import instaloader
-# import shutil
 from config import discord_token
-# from config import username, passwd #added username and password to be used in --login
-from user_agents import USER_AGENTS #importing useragents   
+from user_agents import USER_AGENTS
+
 # Initialize Instaloader
 L = instaloader.Instaloader()
 
@@ -31,9 +30,8 @@ def save_uploaded_files(instagram_username, uploaded_files):
     with open(f'Uploaded/{instagram_username}_uploaded_files.txt', 'w') as file:
         file.write('\n'.join(uploaded_files))
 
-
 @bot.command(name='update')
-async def update_uploaded_files(ctx):
+async def update_uploaded_files(ctx, num_users: int = 1):
     try:
         tasks = []
 
@@ -44,23 +42,21 @@ async def update_uploaded_files(ctx):
             file_path = os.path.join('Uploaded', file)
             print(f"{file}: {os.path.getmtime(file_path)}")
             
-            
         # Sort the files based on modification time (oldest first)
         files.sort(key=lambda x: os.path.getmtime(os.path.join('Uploaded', x)))
 
-        # Iterate through the sorted list of files
-        for filename in files:
+        # Iterate through the sorted list of files and process the specified number of users
+        for filename in files[:num_users]:
             instagram_username = filename.replace('_uploaded_files.txt', '')
 
             # Create a task for each username to download and upload asynchronously
             task = bot.loop.create_task(download_and_upload(ctx, instagram_username))
             tasks.append(task)
-            break
+            
         await asyncio.gather(*tasks)
-        print("Update completed for", instagram_username)
+        print(f"Update completed for {num_users} user(s)")
     except Exception as e:
         print(f"An error occurred during the update: {str(e)}")
-
 
 @bot.command(name='dl')
 async def download_and_upload(ctx, instagram_username):
@@ -68,7 +64,7 @@ async def download_and_upload(ctx, instagram_username):
         # Set a random user agent for Instaloader
         set_random_user_agent()
         
-        # setting the download folder of instaloader to cleanup the main folder
+        # Setting the download folder of Instaloader to clean up the main folder
         L = instaloader.Instaloader(user_agent=random.choice(USER_AGENTS), dirname_pattern=f"Downloaded/{instagram_username}", download_geotags=False, download_comments=False, save_metadata=False)
         
         # Equivalent of --login
@@ -81,13 +77,17 @@ async def download_and_upload(ctx, instagram_username):
 
         for i, post in enumerate(profile.get_posts(), start=1):
             try:
+                # Check if the post has already been downloaded
+                post_file_name = os.path.join(f"Downloaded/{instagram_username}", f"{post.date_utc.strftime('%Y-%m-%d_%H-%M-%S')}_{post.mediaid}.json")
+                if os.path.exists(post_file_name):
+                    print(f"Skipped post {i}/{post_count} (Already downloaded)")
+                    continue
+
                 L.download_post(post, target=instagram_username)
                 print(f"Downloaded post {i}/{post_count}")
             except instaloader.exceptions.InstaloaderException as e:
                 print(f"Error downloading post {i}/{post_count}: {str(e)}")
-                # Check if the error is due to a redirect
                 if "Redirected to login page" in str(e):
-                    # Change user agent and retry downloading the post
                     set_random_user_agent()
                     L.download_post(post, target=instagram_username)
                     print(f"Downloaded post {i}/{post_count} after changing user agent")
@@ -97,14 +97,10 @@ async def download_and_upload(ctx, instagram_username):
         existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name, type=discord.ChannelType.text)
 
         if not existing_channel:
-            # Replace special characters with underscores for channel name
             sanitized_channel_name = ''.join(c if c.isalnum() else '_' for c in channel_name)
-
-            # Check for an existing text channel with the sanitized name
             existing_channel = next((channel for channel in ctx.guild.text_channels if channel.name == sanitized_channel_name), None)
 
             if not existing_channel:
-                # Create a new text channel if no existing channel is found
                 try:
                     new_channel = await ctx.guild.create_text_channel(sanitized_channel_name)
                     print(f"Created new channel: {new_channel.name}")
@@ -118,7 +114,7 @@ async def download_and_upload(ctx, instagram_username):
             new_channel = existing_channel
             print(f"Found existing channel: {new_channel.name}")
         
-        #initialize a variable to store the recently made 'downloaded directory'
+        # Initialize a variable to store the recently made 'downloaded directory'
         downloaded_dir = f"Downloaded/{instagram_username}"
         
         # Upload images to the new channel
@@ -130,25 +126,22 @@ async def download_and_upload(ctx, instagram_username):
         # Load previously uploaded files specific to the Instagram username
         uploaded_files = set(load_uploaded_files(instagram_username))
 
-        # Adjusted file size limit for Discord's increased limit
         max_file_size_bytes = 25 * 1024 * 1024  # 25 MB
 
         for i, filename in enumerate(files, start=1):
             file_path = os.path.join(downloaded_dir, filename)
 
-            # Check if the file has already been uploaded
             if filename in uploaded_files:
                 print(f"Skipped file {i}/{file_count} (Already uploaded)")
                 continue
 
-            # Check file size before uploading
             file_size = os.path.getsize(file_path)
 
             if file_size <= max_file_size_bytes:
                 with open(file_path, "rb") as file:
                     try:
                         await new_channel.send(file=discord.File(file, filename=filename))
-                        uploaded_files.add(filename)  # Add the filename to the set of uploaded files
+                        uploaded_files.add(filename)
                         print(f"Uploaded file {i}/{file_count} of {instagram_username}")
                     except discord.Forbidden:
                         print(f"Error: Bot doesn't have permission to send files in {new_channel.mention}.")
@@ -156,30 +149,16 @@ async def download_and_upload(ctx, instagram_username):
             else:
                 print(f"Skipped file {i}/{file_count} (File size exceeds Discord limit)")
 
-        # Save the updated list of uploaded files specific to the Instagram username
         save_uploaded_files(instagram_username, uploaded_files)
 
-        # Delete the entire folder after uploading all files
-        # shutil.rmtree(instagram_username)
-
-        print(f"Download, upload, and folder deletion completed for {instagram_username} in channel {new_channel.mention}")
+        print(f"Download and upload completed for {instagram_username} in channel {new_channel.mention}")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-# Run the Discord bot
 bot.run(discord_token)
+
 
 #TODO
 
-
-# initialize a Downloaded directory first before downloading the files
-# if a Downloaded directory is found then proceed to download 
-
-# add a feature where it saves a username (probably a text file to store the usernames) where an error occured
-# it will also check that file if it has any entry/ies to it and it will update it first using !update
-# so this will be added somewhere in the dl or the upload function
-
-
-# also add a feature where i can update multiple users using the !update e.g. !update 2 (for 2 oldest usernames), !update 3 (for 3 oldest usernames)
 # Need to check instaloader main repo about the error
 # An error occurred: Login: Checkpoint required. Point your browser to https://www.instagram.com/challenge/action/AXFCafOiDQ_XRypUz57tb4J0shSaWvKiw_CNDaYaCWl7X4bO2hpKQqjRqVt4vtbY0qcfOmo/AfzMJ6PjvSZXM46Rc68381t_Ute8WryRwJ7hKCJIXcc7P3cJdAPcrCmBhVHZnQKHL2Kiy11cY4cpVQ/ffc_KWeTmh26zKnnfhBZWHMfv8cI5hNKFqWUhhU9hO1DfuagAbIqjnOUWmrqIn5xu7mZ/ - follow the instructions, then retry.
