@@ -75,11 +75,11 @@ async def download_and_upload(ctx, instagram_username):
         post_count = sum(1 for _ in profile.get_posts())
         print(f"Downloading {post_count} posts from Instagram for {instagram_username}")
 
+        downloaded_media_ids = {os.path.splitext(file)[0] for file in os.listdir(f"Downloaded/{instagram_username}") if file.endswith(('.jpg', '.png', '.mp4', '.json'))}
+
         for i, post in enumerate(profile.get_posts(), start=1):
             try:
-                # Check if the post has already been downloaded
-                post_file_name = os.path.join(f"Downloaded/{instagram_username}", f"{post.date_utc.strftime('%Y-%m-%d_%H-%M-%S')}_{post.mediaid}.json")
-                if os.path.exists(post_file_name):
+                if str(post.mediaid) in downloaded_media_ids:
                     print(f"Skipped post {i}/{post_count} (Already downloaded)")
                     continue
 
