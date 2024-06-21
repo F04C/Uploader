@@ -64,6 +64,10 @@ async def download_and_upload(ctx, instagram_username):
         # Set a random user agent for Instaloader
         set_random_user_agent()
         
+        
+        downloaded_dir = f"Downloaded/{instagram_username}"
+        os.makedirs(downloaded_dir, exist_ok=True)
+        
         # Setting the download folder of Instaloader to clean up the main folder
         L = instaloader.Instaloader(user_agent=random.choice(USER_AGENTS), dirname_pattern=f"Downloaded/{instagram_username}", download_geotags=False, download_comments=False, save_metadata=False)
         
