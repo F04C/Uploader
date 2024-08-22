@@ -4,9 +4,8 @@ import random
 import discord
 from discord.ext import commands
 import instaloader
-from config import discord_token
+from config import discord_token, username, passwd, SESSION_FILE_PATH
 from user_agents import USER_AGENTS
-
 # Initialize Instaloader
 L = instaloader.Instaloader()
 
@@ -73,6 +72,9 @@ async def download_and_upload(ctx, instagram_username):
         
         # Equivalent of --login
         # L.login(username, passwd)
+        
+        L.load_session_from_file(username, SESSION_FILE_PATH)
+        print("Logged In Successfully")
         
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
