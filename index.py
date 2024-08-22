@@ -77,7 +77,7 @@ async def download_and_upload(ctx, instagram_username):
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
-        print(f"Downloading {post_count} posts from Instagram for {instagram_username}")
+        print(f"Downloading posts from Instagram for {instagram_username}")
 
         downloaded_media_ids = {os.path.splitext(file)[0] for file in os.listdir(f"Downloaded/{instagram_username}") if file.endswith(('.jpg', '.png', '.mp4', '.json'))}
 
