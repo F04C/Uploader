@@ -2,10 +2,11 @@ import os
 import asyncio
 import random
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import instaloader
-from config import discord_token, username, passwd, SESSION_FILE_PATH
+from config import discord_token
 from user_agents import USER_AGENTS
+
 # Initialize Instaloader
 L = instaloader.Instaloader()
 
@@ -73,11 +74,10 @@ async def download_and_upload(ctx, instagram_username):
         # Equivalent of --login
         # L.login(username, passwd)
         
-        L.load_session_from_file(username, SESSION_FILE_PATH)        
         # Download images from Instagram
         profile = instaloader.Profile.from_username(L.context, instagram_username)
         post_count = sum(1 for _ in profile.get_posts())
-        print(f"Downloading posts from Instagram for {instagram_username}")
+        print(f"Downloading {post_count} posts from Instagram for {instagram_username}")
 
         downloaded_media_ids = {os.path.splitext(file)[0] for file in os.listdir(f"Downloaded/{instagram_username}") if file.endswith(('.jpg', '.png', '.mp4', '.json'))}
 
